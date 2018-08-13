@@ -8,7 +8,7 @@ Radar（雷达）是拍拍贷研发一款分布式注册中心，能够管理不
 
 注册中心原生客户端不依赖任何框架，能够运行于所有Java1.8+运行时环境，同时对Spring Mvc/Spring Boot环境也有额外支持。
 
-本地快速部署请参见 wiki `快速部署`
+本地快速部署请参见 wiki [`快速部署`](wiki/2.Radar%E5%BF%AB%E9%80%9F%E9%83%A8%E7%BD%B2)
 
 # Screenshots
 
