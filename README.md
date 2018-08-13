@@ -27,3 +27,7 @@ Radar（雷达）是拍拍贷研发一款分布式注册中心，能够管理不
 7. 支持同一服务通过集群(cluster)名进行逻辑隔离。
 8. 支持对接Spring/Ribbon客户端软负载。
 9. 支持容器漂移， 通过设置canInstanceId标识， 应用实例启动时可以保持上次的状态信息。
+
+
+# 欢迎加入radar讨论群
+<img src="doc/assets/qq.png" alt="QQ群" align=center />
