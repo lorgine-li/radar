@@ -12,7 +12,7 @@ public class BeanConfig {
 	private static final Logger logger = LoggerFactory.getLogger(BeanConfig.class);
 	@Bean
 	public RadarClientConfig radarClientConfig(){
-		RadarClientConfig radarClientConfig=new RadarClientConfig("http://fat-radar.ppdaicorp.com");		
+		RadarClientConfig radarClientConfig=new RadarClientConfig("http://localhost:8080");		
 		radarClientConfig.setAppName("radar-demo-provider-1");
 		radarClientConfig.setCandAppId("1010111");
 		radarClientConfig.setClusterName("default");

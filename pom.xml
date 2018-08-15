@@ -70,19 +70,7 @@
 				<scope>test</scope>
 			</dependency>		
 		</dependencies>
-	</dependencyManagement>
-	<distributionManagement>
-		<repository>
-			<id>ppdai-Releases</id>
-			<name>Internal Releases</name>
-			<url>http://maven.repo.ppdai.com/nexus/content/repositories/releases/</url>
-		</repository>
-		<snapshotRepository>
-			<id>ppdai-Snapshots</id>
-			<name>Internal Snapshots</name>
-			<url>http://maven.repo.ppdai.com/nexus/content/repositories/snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
+	</dependencyManagement>	
 	<build>
 		<pluginManagement>
 			<plugins>
