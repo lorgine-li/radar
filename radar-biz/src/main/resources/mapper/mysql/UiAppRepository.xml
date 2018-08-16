@@ -70,6 +70,9 @@
         <if test="appName != null and appName !=''">
             and app_name like concat(concat('%',#{appName}),'%')
         </if>
+        <if test="appId != null and appId !=''">
+            and cand_app_id like concat(concat('%',#{appId}),'%')
+        </if>
         <if test="departmentName != null and departmentName !=''">
             and department_name like concat(concat('%',#{departmentName}),'%')
         </if>
