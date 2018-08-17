@@ -620,30 +620,30 @@ public class SoaConfig {
 		return registerClientThreadSize;
 	}
 
-	private volatile String _heatbeatBatchSize = "";
-	private volatile int heatbeatBatchSize = 0;
+	private volatile String _heartbeatBatchSize = "";
+	private volatile int heartbeatBatchSize = 0;
 
-	private final String env_getHeartbeatBatchSize_key="radar.heatbeat.batch.size";
-	private final String env_getHeartbeatBatchSize_defaultValue="5";
+	private final String env_getHeartbeatBatchSize_key="radar.heartbeat.batch.size";
+	private final String env_getHeartbeatBatchSize_defaultValue="20";
 	private final String env_getHeartbeatBatchSize_des="批量执行心跳个数";
 
 	// 批量执行心跳个数
 	public int getHeartbeatBatchSize() {
 		try {
-			if (!_heatbeatBatchSize.equals(env.getProperty(env_getHeartbeatBatchSize_key,env_getHeartbeatBatchSize_defaultValue))) {
-				_heatbeatBatchSize = env.getProperty(env_getHeartbeatBatchSize_key, env_getHeartbeatBatchSize_defaultValue);
-				heatbeatBatchSize = Integer.parseInt(_heatbeatBatchSize);
-				if (heatbeatBatchSize < 5 && heartBeatTime > 20) {
-					heatbeatBatchSize = 5;
+			if (!_heartbeatBatchSize.equals(env.getProperty(env_getHeartbeatBatchSize_key,env_getHeartbeatBatchSize_defaultValue))) {
+				_heartbeatBatchSize = env.getProperty(env_getHeartbeatBatchSize_key, env_getHeartbeatBatchSize_defaultValue);
+				heartbeatBatchSize = Integer.parseInt(_heartbeatBatchSize);
+				if (heartbeatBatchSize < 5 && heartBeatTime > 50) {
+					heartbeatBatchSize = 20;
 				}
 				onChange();
 			}
 		} catch (Exception e) {
-			heatbeatBatchSize = 5;
+			heartbeatBatchSize = 20;
 			onChange();
 			log.error("getHeartbeatBatchSize_SoaConfig_error", e);
 		}
-		return heatbeatBatchSize;
+		return heartbeatBatchSize;
 	}
 
 	private final String env_isFullLog_key="radar.log.full";
@@ -962,4 +962,24 @@ public class SoaConfig {
 		return env.getProperty(env_getAdminUsers_key, env_getAdminUsers_defaultValue);
 	}
 
+	
+	private volatile String _heartBeatThreadSize = "5";
+	private volatile int heartBeatThreadSize = 5;
+
+	private final String env_getHeartBeatThreadSize_key="radar.heartbeat.thread.size";
+	private final String env_getHeartBeatThreadSize_defaultValue="5";
+	private final String env_getHeartBeatThreadSize_des="批量执行心跳线程数";
+	public int getHeartBeatThreadSize() {
+		try {
+			if (!_heartBeatThreadSize.equals(env.getProperty(env_getHeartBeatThreadSize_key,env_getHeartBeatThreadSize_defaultValue))) {
+				_heartBeatThreadSize = env.getProperty(env_getHeartBeatThreadSize_key, env_getHeartBeatThreadSize_defaultValue);
+				heartBeatThreadSize = Integer.parseInt(_maxTestCount);
+				onChange();
+			}
+		} catch (Exception e) {
+			heartBeatThreadSize = 5;
+			onChange();
+		}
+		return heartBeatThreadSize;
+	}
 }
