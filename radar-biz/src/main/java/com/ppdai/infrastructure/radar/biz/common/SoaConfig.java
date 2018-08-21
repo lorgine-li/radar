@@ -973,7 +973,7 @@ public class SoaConfig {
 		try {
 			if (!_heartBeatThreadSize.equals(env.getProperty(env_getHeartBeatThreadSize_key,env_getHeartBeatThreadSize_defaultValue))) {
 				_heartBeatThreadSize = env.getProperty(env_getHeartBeatThreadSize_key, env_getHeartBeatThreadSize_defaultValue);
-				heartBeatThreadSize = Integer.parseInt(_maxTestCount);
+				heartBeatThreadSize = Integer.parseInt(_heartBeatThreadSize);
 				onChange();
 			}
 		} catch (Exception e) {

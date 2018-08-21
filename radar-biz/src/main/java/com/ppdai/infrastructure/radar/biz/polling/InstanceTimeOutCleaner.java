@@ -193,8 +193,14 @@ public class InstanceTimeOutCleaner {
 		if (!CollectionUtils.isEmpty(normalEntity)) {
 			String dbNow = Util.formateDate(util.getDbNow());
 			normalEntity.forEach(t1 -> {
-				Util.log(log, t1, "heatBeatNormal",
-						String.format("心跳正常，心跳状态变更为1,json为:%s,and DbTime is %s", JsonUtil.toJsonNull(t1), dbNow));
+				String content = String.format("心跳正常，心跳状态变更为1,json为:%s,and DbTime is %s", JsonUtil.toJsonNull(t1), dbNow);
+				
+				Util.log(log, t1, "heartBeatNormal",content);
+				if (t1.getInstanceStatus() == 0) {
+					emailUtil.sendWarnMail(
+							"checkHeartTime,appId:" + t1.getCandAppId() + ",ip:" + t1.getIp() + "心跳正常，服务可用", content,
+							getMail(t1.getCandAppId()));
+				}
 			});
 			if (soaLockService.isMaster()) {
 				log.info("NormalHeartTime开始更新");
@@ -225,7 +231,7 @@ public class InstanceTimeOutCleaner {
 			String dbNow = Util.formateDate(util.getDbNow());
 			expireEntity.forEach(t1 -> {
 				String content = String.format("超时，心跳状态变更为0,json为:%s,and DbTime is %s", JsonUtil.toJsonNull(t1), dbNow);
-				Util.log(log, t1, "heatBeatTimeOut", content);
+				Util.log(log, t1, "heartBeatTimeOut", content);
 				if (t1.getInstanceStatus() == 1) {
 					emailUtil.sendWarnMail(
 							"checkHeartTime,appId:" + t1.getCandAppId() + ",ip:" + t1.getIp() + "心跳超时，服务可能不可用", content,
