@@ -3,6 +3,7 @@ package com.ppdai.infrastructure.ui.service;
 import com.ppdai.infrastructure.radar.biz.dal.UiAppClusterRepository;
 import com.ppdai.infrastructure.radar.biz.dto.ui.UiResponse;
 import com.ppdai.infrastructure.radar.biz.entity.AppClusterEntity;
+import com.ppdai.infrastructure.radar.biz.service.AppClusterService;
 import com.ppdai.infrastructure.ui.service.common.UiResponseHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

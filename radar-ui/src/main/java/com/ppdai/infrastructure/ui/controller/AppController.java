@@ -1,5 +1,6 @@
 package com.ppdai.infrastructure.ui.controller;
 
+import com.ppdai.infrastructure.radar.biz.bo.OrganizationBo;
 import com.ppdai.infrastructure.radar.biz.service.UserService;
 import com.ppdai.infrastructure.ui.dto.request.AppUpdateRequest;
 import com.ppdai.infrastructure.radar.biz.dto.ui.UiResponse;

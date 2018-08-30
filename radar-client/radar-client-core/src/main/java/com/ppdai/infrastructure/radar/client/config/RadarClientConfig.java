@@ -7,9 +7,9 @@ public class RadarClientConfig {
 	// 注册中心地址
 	private String registryUrl;
 	// 连接池获取时间
-	private int connectionTimeoutSecs = 35;
+	private int connectionTimeout = 35;
 	// 接口访问时间
-	private int readTimeoutSecs = 35;
+	private int readTimeout = 35;
 	// 注意此端口可以不传
 	private String candInstanceId;
 	private int port;
@@ -36,20 +36,20 @@ public class RadarClientConfig {
 		this.registryUrl = registryUrl;
 	}
 
-	public int getConnectionTimeoutSecs() {
-		return connectionTimeoutSecs;
+	public int getConnectionTimeout() {
+		return connectionTimeout;
 	}
 
-	public void setConnectionTimeoutSecs(int connectionTimeoutSecs) {
-		this.connectionTimeoutSecs = connectionTimeoutSecs;
+	public void setConnectionTimeout(int connectionTimeout) {
+		this.connectionTimeout = connectionTimeout;
 	}
 
-	public int getReadTimeoutSecs() {
-		return readTimeoutSecs;
+	public int getReadTimeout() {
+		return readTimeout;
 	}
 
-	public void setReadTimeoutSecs(int readTimeoutSecs) {
-		this.readTimeoutSecs = readTimeoutSecs;
+	public void setReadTimeout(int readTimeout) {
+		this.readTimeout = readTimeout;
 	}
 
 	public String getCandInstanceId() {

@@ -41,7 +41,8 @@ public class InstanceController {
      * @return
      */
     @RequestMapping("/list")
-    public String list() {
+    public String list(Model model) {
+        model.addAttribute("tag","list");
         return "app/instance/list";
     }
 
@@ -52,8 +53,21 @@ public class InstanceController {
      */
     @RequestMapping("/list/data")
     @ResponseBody
-    public UiResponse listData(HttpServletRequest request, InstanceSearchRequest instanceSearchRequest) {
+    public UiResponse listData(HttpServletRequest request, InstanceSearchRequest instanceSearchRequest,@RequestParam("tag") String tag) {
         Map<String, Object> parameterMap = new LinkedHashMap<>();
+         if(tag.equals("my")){
+            instanceSearchRequest.setDepartmentName(userService.getCurrentUser().getDepartment());
+        }
+             //查询实例过期的截止时间
+        if (!StringUtils.isEmpty(instanceSearchRequest.getHeartStatus())&&Integer.parseInt(instanceSearchRequest.getHeartStatus())>2) {
+                 long lastNoActiveTime = System.currentTimeMillis() - Integer.parseInt(instanceSearchRequest.getHeartStatus()) * 60 * 1000;
+                 parameterMap.put("expiredTime",instanceSearchRequest.getHeartStatus());
+                 parameterMap.put("lastNoActiveTime", formatter.format(new Date(lastNoActiveTime)));
+        }else{
+                 parameterMap.put("expiredTime",null);
+                 parameterMap.put("lastNoActiveTime",null);
+             }
+
         parameterMap = setParameterMap(parameterMap, instanceSearchRequest);
         return uiInstanceService.findInstance(request, parameterMap);
     }
@@ -102,60 +116,17 @@ public class InstanceController {
      * @return
      */
     @RequestMapping("/my")
-    public String my(HttpServletRequest request) {
+    public String my(HttpServletRequest request,Model model) {
         //如果用户已经登录,则可以查看"我的实例"
         String userId= userService.getCurrentUser().getUserId();
         if (!StringUtils.isEmpty(userId)) {
-            return "app/instance/my";
+            model.addAttribute("tag","my");
+            return "app/instance/list";
         } else {
             return "app/instance/reminder";
         }
     }
 
-    /**
-     * instance列表数据加载
-     * @return
-     */
-    @RequestMapping("/my/data")
-    @ResponseBody
-    public UiResponse myData(HttpServletRequest request,InstanceSearchRequest instanceSearchRequest) {
-        instanceSearchRequest.setDepartmentName(userService.getCurrentUser().getDepartment());
-        Map<String, Object> parameterMap = new LinkedHashMap<>();
-        parameterMap = setParameterMap(parameterMap, instanceSearchRequest);
-        return uiInstanceService.findInstance(request, parameterMap);
-    }
-
-    /**
-     * 展示过期实例
-     *
-     * @param request
-     * @return
-     */
-    @RequestMapping("/expired")
-    public String expired(HttpServletRequest request) {
-        return "app/instance/expired";
-    }
-
-    /**
-     * 过期列表数据加载
-     *
-     * @param request
-     * @return
-     */
-    @RequestMapping("/expired/data")
-    @ResponseBody
-    public UiResponse expiredData(HttpServletRequest request, InstanceSearchRequest instanceSearchRequest) {
-        Map<String, Object> parameterMap = new LinkedHashMap<>();
-        parameterMap = setParameterMap(parameterMap, instanceSearchRequest);
-        //查询实例过期的截止时间
-        if (!StringUtils.isEmpty(instanceSearchRequest.getStatusSelect())&&Integer.parseInt(instanceSearchRequest.getStatusSelect())!=0) {
-            long lastNoActiveTime = System.currentTimeMillis() - Integer.parseInt(instanceSearchRequest.getStatusSelect()) * 60 * 1000;
-            parameterMap.put("lastNoActiveTime", formatter.format(new Date(lastNoActiveTime)));
-        }else{
-            parameterMap.put("statusSelect",null);
-        }
-        return uiInstanceService.findExpiredInstance(request, parameterMap);
-    }
 
 
     /**
@@ -192,6 +163,7 @@ public class InstanceController {
         int pageNum = Integer.parseInt(instanceSearchRequest.getPage());
         int pageSize = Integer.parseInt(instanceSearchRequest.getLimit());
         parameterMap.put("statusSelect", instanceSearchRequest.getStatusSelect());
+        parameterMap.put("heartStatus",instanceSearchRequest.getHeartStatus());
         //instance的自增ID,用于根据id查询
         parameterMap.put("ID", instanceSearchRequest.getId());
         parameterMap.put("clusterName",instanceSearchRequest.getClusterName());
@@ -202,6 +174,7 @@ public class InstanceController {
         parameterMap.put("departmentName", instanceSearchRequest.getDepartmentName());
         parameterMap.put("appName",instanceSearchRequest.getAppName());
         parameterMap.put("ip",instanceSearchRequest.getIp());
+        parameterMap.put("sdkVersion",instanceSearchRequest.getSdkVersion());
         return parameterMap;
     }
 

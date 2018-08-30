@@ -150,11 +150,11 @@ public class RadarClientBootstrapListener
 				logger.info("radarClientConfig is null");
 				String rgUrl = env.getProperty("radar.register.url");				
 				radarClientConfig = new RadarClientConfig(rgUrl);
-				String connectionTimeOut = env.getProperty("radar.register.connectionTimeOut", "30");
-				radarClientConfig.setConnectionTimeoutSecs(Integer.parseInt(connectionTimeOut));
+				String connectionTimeOut = env.getProperty("radar.register.connectionTimeOut", "35");
+				radarClientConfig.setConnectionTimeout(Integer.parseInt(connectionTimeOut));
 
-				String readTimeOut = env.getProperty("radar.register.readTimeOut", "30");
-				radarClientConfig.setReadTimeoutSecs(Integer.parseInt(readTimeOut));
+				String readTimeOut = env.getProperty("radar.register.readTimeOut", "35");
+				radarClientConfig.setReadTimeout(Integer.parseInt(readTimeOut));
 
 				String candInstanceId = env.getProperty("radar.instance.candInstanceId");
 				radarClientConfig.setCandInstanceId(candInstanceId);

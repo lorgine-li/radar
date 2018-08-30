@@ -29,4 +29,6 @@ public interface UiInstanceRepository {
 
     public AppEntity findOwnerAndMemberById(@Param("instanceId") long instanceId);
 
+    public List<String> getAllSdkVersion();
+
 }

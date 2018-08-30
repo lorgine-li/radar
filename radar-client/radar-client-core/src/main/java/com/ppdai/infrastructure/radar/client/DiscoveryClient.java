@@ -62,6 +62,9 @@ public class DiscoveryClient {
 
 	// 和注册中心服务端交互的客户端
 	private RadarResource radarClient;
+
+	// 和注册中心服务端交互的客户端
+	private RadarResource radarHeartbeatClient;
 	// 当前服务信息
 	private RadarInstance instance;
 	// 注册中心服务端返回的实例id
@@ -143,10 +146,13 @@ public class DiscoveryClient {
 			}
 			this.config = config;
 			this.radarClient = new RadarResourceIml(config.getRegistryUrl(),
-					new JsonHttpClientImpl(config.getConnectionTimeoutSecs(), config.getReadTimeoutSecs()));
+					new JsonHttpClientImpl(config.getConnectionTimeout()*1000L, config.getReadTimeout()*1000L));
+			this.radarHeartbeatClient = new RadarResourceIml(config.getRegistryUrl(),
+					new JsonHttpClientImpl(1500L, 1500L));
 			isInited.set(true);
 			// 预加热一下
 			this.radarClient.hs();
+			this.radarHeartbeatClient.hs();
 
 		}
 	}
@@ -373,10 +379,7 @@ public class DiscoveryClient {
 		try {
 			if (isStartUp.compareAndSet(true, false)) {
 				try {
-					for (int i = 0; i < 10; i++) {
-						doDeregister();
-						break;
-					}
+					doDeregister();
 				} catch (Exception e) {
 					Thread.sleep(1000);
 				}
@@ -481,10 +484,13 @@ public class DiscoveryClient {
 	private void doHeartbeat() {
 		HeartBeatRequest request = new HeartBeatRequest();
 		request.setInstanceId(id);
-		try {
-			radarClient.heartbeat(request);
-		} catch (Throwable e) {
-			logger.warn("DiscoveryClient was unable to send heartbeat_error: " + e.getMessage(), e);
+		for (int i = 0; i < 2; i++) {
+			try {
+				this.radarHeartbeatClient.heartbeat(request);
+				break;
+			} catch (Throwable e) {
+				logger.warn("DiscoveryClient was unable to send heartbeat_error: " + e.getMessage(), e);
+			}
 		}
 	}
 

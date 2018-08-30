@@ -89,6 +89,7 @@ layui.use(['element', 'table', 'jquery', 'layer', 'form'], function () {
 
             fillForm(data);
         }
+
     });
 
     function fillForm(app) {

@@ -16,6 +16,17 @@ layui
             var titles = new Array()
             //定义一个参数来记录select选中项的value
             var optionVal = 0;
+            //定义一个参数来记录heartSelect选中项的value
+            var heartSelectVal = 0;
+
+            //使用第三种渲染方式，为instance的list.html进行初始化
+            var tag=$("#tag").val();
+            var instanceListOptions={
+                url: '/app/instance/list/data?tag=' + tag
+            }
+            //表格初始化
+            table.init('instanceTableId', instanceListOptions);
+
 
             //为instanceDetail.html文件中的table进行初始化
             var instanceId = $("#instanceId").val();
@@ -27,35 +38,45 @@ layui
             table.init('instanceDetailTableId', instanceDetailOptions);
 
 
+
             //监听select选项
             form.on('select(statusSelect)', function (data) {
                 optionVal = data.value
             });
 
-            /**查询*/
-            $(".servSearchList_btn").click(function () {
-                getDataList(optionVal, $("#ID").val(), $("#clusterName").val(), $("#appId").val(),$("#appName").val(),$("#ip").val(), 1);
+            form.on('select(heartSelect)', function (data) {
+                heartSelectVal = data.value
             });
 
-            function getDataList(optionVal, id,clusterName, appId ,appName,ip, page) {
+
+            /**查询*/
+            $(".servSearchList_btn").click(function () {
+                getDataList(optionVal,heartSelectVal, $("#ID").val(), $("#clusterName").val(), $("#appId").val(),$("#appName").val(),$("#ip").val(),$("#sdkVersion").val(), 1);
+            });
+
+            function getDataList(optionVal,heartSelectVal, id,clusterName, appId ,appName,ip,sdkVersion,page) {
                 var option={
                     where: {//请求参数
                         statusSelect: optionVal,
+                        heartStatus: heartSelectVal,
                         id: id,
                         clusterName: clusterName,
                         appId: appId,
                         appName:appName,
-                        ip:ip
+                        ip:ip,
+                        sdkVersion:sdkVersion
+
                     }
                 };
                 if(page!==undefined){
                     option["page"]=page;
                 }
+
                 table.reload('instanceTableId',option);
             }
 
             function refreshList() {
-                getDataList(optionVal, $("#ID").val(), $("#clusterName").val(), $("#appId").val(),$("#appName").val(),$("#ip").val());
+                getDataList(optionVal,heartSelectVal, $("#ID").val(), $("#clusterName").val(), $("#appId").val(),$("#appName").val(),$("#ip").val(),$("#sdkVersion").val());
             }
 
 
@@ -489,9 +510,31 @@ layui
                     if (layEvent === 'instance_expand') {
                         var url = "/app/instance/expand?instanceId=" + data.id
                         parent.window.addTab(
-                            data.id, url);
+                            "详情查看"+data.id, url);
                     }
+
+                    if(layEvent==='confirm'){
+                        var checkUrl="http://"+data.ip+":"+data.port+"/radar/client/instance"
+
+                        $.ajax({
+                            url: '/heart/confirm',
+                            type: 'get',
+                            async: false,
+                            data : {
+                                "checkUrl" : checkUrl
+                            },
+                            success: function (result) {
+                                    var url="/app/heartbeatCheck?checkResult="+result+"&checkUrl="+checkUrl
+                                    parent.window.addTab(
+                                        "心跳确认"+data.id,url);
+                            }, error: function (result) {
+                                layer.msg("请求失败")
+                            }
+                        });
+                    }
+
                     return false;
                 });
+
 
         });

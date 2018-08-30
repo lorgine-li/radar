@@ -2,8 +2,8 @@ package com.ppdai.infrastructure.ui.controller;
 
 import com.ppdai.infrastructure.radar.biz.common.SoaConfig;
 import com.ppdai.infrastructure.radar.biz.dto.ui.UiResponse;
-import com.ppdai.infrastructure.radar.biz.service.UserService;
 import com.ppdai.infrastructure.ui.service.UiTraceService;
+import com.ppdai.infrastructure.ui.service.impl.DefaultRoleService;
 import com.ppdai.infrastructure.ui.service.common.Constant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -25,7 +25,7 @@ import java.util.Map;
 @RequestMapping("/app")
 public class TraceController {
 	@Autowired
-	private UserService userService;
+	private DefaultRoleService defaultRoleService;
 	@Autowired
 	private UiTraceService uiTraceService;
 	@Autowired
@@ -33,12 +33,13 @@ public class TraceController {
 	/**
 	 * 判断trace接口是否可以展示，(只有超级管理员才可以查看trace)
 	 *
+	 * @param request
 	 * @return
 	 */
-	@RequestMapping("/isAdmin")
+	@RequestMapping("/hide")
 	@ResponseBody
-	public int hide() {
-		return userService.getCurrentUser().isAdmin()?0:1;
+	public int hide(HttpServletRequest request) {
+		return defaultRoleService.getRole(null);
 	}
 
 	@GetMapping("/stat")

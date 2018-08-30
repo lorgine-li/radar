@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.ppdai.infrastructure.radar.biz.dal.SoaLockRepository;
+import com.ppdai.infrastructure.radar.biz.dto.ui.CombinedInstanceDto;
 import com.ppdai.infrastructure.radar.biz.dto.ui.UiResponse;
 import com.ppdai.infrastructure.radar.biz.entity.SoaLockEntity;
 import com.ppdai.infrastructure.ui.service.common.UiResponseHelper;

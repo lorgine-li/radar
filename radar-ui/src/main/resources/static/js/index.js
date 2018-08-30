@@ -11,7 +11,7 @@ layui.use(['element', 'layer', 'jquery'], function () {
             //默认不显示trace导航
                 //获取角色
                 $.ajax({
-                    url: '/app/isAdmin',
+                    url: '/app/hide',
                     type: 'POST',
                     async: false,
                     success: function (data) {
@@ -36,7 +36,7 @@ layui.use(['element', 'layer', 'jquery'], function () {
         } else {
             titles.push(id)
             element.tabAdd('bodyTab', {
-                title: '详情展示',
+                title: id,
                 content: '<iframe src="' + url + '"></iframe>',
                 id: id
             });

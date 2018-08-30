@@ -50,6 +50,12 @@
             and (ins.supper_status=-1
             or(ins.supper_status=0 and (ins.heart_status=0 or ins.pub_status=0 or ins.instance_status=0)))
         </if>
+        <if test="heartStatus == 1 ">
+            and ins.heart_status=1
+        </if>
+        <if test="heartStatus == 2 ">
+            and ins.heart_status=0
+        </if>
         <if test="ID != null and ID !=''">
             and ins.id = #{ID}
         </if>
@@ -68,6 +74,16 @@
         <if test="ip != null and ip !=''">
             and ins.ip = #{ip}
         </if>
+        <if test="sdkVersion != null and sdkVersion !=''">
+            and ins.sdk_version = #{sdkVersion}
+        </if>
+        <if test="expiredTime != null and expiredTime !=''">
+            and ins.heart_time >= #{lastNoActiveTime}
+        </if>
+        <if test="lastNoActiveTime != null and lastNoActiveTime !=''">
+            and ins.heart_status=0
+        </if>
+
     </select>
 
     <select id="findBy" parameterType="Map" resultMap="BaseResultMap">
@@ -83,6 +99,12 @@
                 and (ins.supper_status=-1
                 or(ins.supper_status=0 and (ins.heart_status=0 or ins.pub_status=0 or ins.instance_status=0)))
             </if>
+            <if test="heartStatus == 1 ">
+                and ins.heart_status=1
+            </if>
+            <if test="heartStatus == 2 ">
+                and ins.heart_status=0
+            </if>
             <if test="ID != null and ID !=''">
                 and ins.id = #{ID}
             </if>
@@ -101,67 +123,14 @@
             <if test="ip != null and ip !=''">
                 and ins.ip = #{ip}
             </if>
-        </where>
-
-        <if test="pageIndex !=null and pageSize !=''">
-            limit #{pageIndex},#{pageSize}
-        </if>
-
-    </select>
-
-    <select id="expiredCount" parameterType="Map" resultType="long">
-        select count(*) from instance ins, app a
-        where
-        ins.app_id=a.id and ins.heart_status=0
-        <if test="statusSelect != null and statusSelect !=''">
-            and ins.heart_time >= #{lastNoActiveTime}
-        </if>
-        <if test="ID != null and ID !=''">
-            and ins.id = #{ID}
-        </if>
-        <if test="clusterName != null and clusterName !=''">
-            and ins.app_cluster_name = #{clusterName}
-        </if>
-        <if test="appId != null and appId !=''">
-            and ins.cand_app_id = #{appId}
-        </if>
-        <if test="departmentName != null and departmentName !=''">
-            and a.department_name = #{departmentName}
-        </if>
-        <if test="appName != null and appName !=''">
-            and a.app_name = #{appName}
-        </if>
-        <if test="ip != null and ip !=''">
-            and ins.ip = #{ip}
-        </if>
-
-    </select>
-
-    <select id="findExpiredBy" parameterType="Map" resultMap="BaseResultMap">
-        select ins.*, a.owner_name,a.owner_id,a.member_id,a.member_name,a.department_name
-        from instance ins,app a
-        <where>
-            ins.app_id=a.id and ins.heart_status=0
-            <if test="statusSelect != null and statusSelect !=''">
+            <if test="sdkVersion != null and sdkVersion !=''">
+                and ins.sdk_version = #{sdkVersion}
+            </if>
+            <if test="expiredTime != null and expiredTime !=''">
                 and ins.heart_time >= #{lastNoActiveTime}
             </if>
-            <if test="ID != null and ID !=''">
-                and ins.id = #{ID}
-            </if>
-            <if test="clusterName != null and clusterName !=''">
-                and ins.app_cluster_name = #{clusterName}
-            </if>
-            <if test="appId != null and appId !=''">
-                and ins.cand_app_id = #{appId}
-            </if>
-            <if test="departmentName != null and departmentName !=''">
-                and a.department_name = #{departmentName}
-            </if>
-            <if test="appName != null and appName !=''">
-                and a.app_name = #{appName}
-            </if>
-            <if test="ip != null and ip !=''">
-                and ins.ip = #{ip}
+            <if test="lastNoActiveTime != null and lastNoActiveTime !=''">
+                and ins.heart_status=0
             </if>
         </where>
 
@@ -170,6 +139,7 @@
         </if>
 
     </select>
+
 
 
     <select id="instanceCount" parameterType="Map" resultType="long">
@@ -195,6 +165,10 @@
         ins.app_id=a.id
         and
         ins.id=#{instanceId}
+    </select>
+
+    <select id="getAllSdkVersion" resultType="string">
+        select sdk_version from instance
     </select>
 
     <update id="updatePubStatus">

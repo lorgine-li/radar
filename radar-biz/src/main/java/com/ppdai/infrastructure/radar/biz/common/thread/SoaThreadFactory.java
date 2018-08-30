@@ -16,6 +16,7 @@ public class SoaThreadFactory implements ThreadFactory {
 	private final AtomicLong threadNumber = new AtomicLong(1);
 
 	private final String namePrefix;
+	private int priority = 0;
 
 	private final boolean daemon;
 
@@ -27,6 +28,10 @@ public class SoaThreadFactory implements ThreadFactory {
 
 	public static ThreadFactory create(String namePrefix, boolean daemon) {
 		return new SoaThreadFactory(namePrefix, daemon);
+	}
+
+	public static ThreadFactory create(String namePrefix, int priority, boolean daemon) {
+		return new SoaThreadFactory(namePrefix, priority, daemon);
 	}
 
 	public static boolean waitAllShutdown(int timeoutInMillis) {
@@ -79,11 +84,21 @@ public class SoaThreadFactory implements ThreadFactory {
 		this.namePrefix = namePrefix;
 		this.daemon = daemon;
 	}
+
+	private SoaThreadFactory(String namePrefix, int priority, boolean daemon) {
+		this.namePrefix = namePrefix;
+		this.daemon = daemon;
+		this.priority = priority;
+	}
+
 	@Override
 	public Thread newThread(Runnable runnable) {
 		Thread thread = new Thread(THREAD_GROUP, runnable, //
 				THREAD_GROUP.getName() + "-" + namePrefix + "-" + threadNumber.getAndIncrement());
-		 thread.setDaemon(daemon);
+		thread.setDaemon(daemon);
+		if (priority > 0) {
+			thread.setPriority(priority);
+		}
 		// if (thread.getPriority() != Thread.NORM_PRIORITY) {
 		// thread.setPriority(Thread.NORM_PRIORITY);
 		// }

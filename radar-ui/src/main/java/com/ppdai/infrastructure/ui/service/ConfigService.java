@@ -6,7 +6,6 @@ import com.ppdai.infrastructure.ui.bo.ConfigBo;
 import com.ppdai.infrastructure.ui.service.common.UiResponseHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import sun.applet.resources.MsgAppletViewer;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

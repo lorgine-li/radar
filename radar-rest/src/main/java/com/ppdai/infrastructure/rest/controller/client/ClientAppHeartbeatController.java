@@ -1,19 +1,19 @@
 package com.ppdai.infrastructure.rest.controller.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.apache.commons.lang3.RandomUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,9 +52,11 @@ public class ClientAppHeartbeatController {
 	private void init() {
 		heartBeatThreadSize = soaConfig.getHeartBeatThreadSize();
 		executor = new ThreadPoolExecutor(1, 1, 3L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10),
-				SoaThreadFactory.create("heartbeat", true), new ThreadPoolExecutor.CallerRunsPolicy());
+				SoaThreadFactory.create("heartbeat", Thread.MAX_PRIORITY, true),
+				new ThreadPoolExecutor.CallerRunsPolicy());
+
 		executorRun = new ThreadPoolExecutor(heartBeatThreadSize, heartBeatThreadSize, 10L, TimeUnit.SECONDS,
-				new ArrayBlockingQueue<>(5000), SoaThreadFactory.create("heartbeat-run", true),
+				new ArrayBlockingQueue<>(5000), SoaThreadFactory.create("heartbeat-run", Thread.MAX_PRIORITY - 1, true),
 				new ThreadPoolExecutor.CallerRunsPolicy());
 		soaConfig.registerChanged(new Runnable() {
 			@Override
@@ -80,46 +82,40 @@ public class ClientAppHeartbeatController {
 		}
 	}
 
-	private AtomicLong heartBeatCounter = new AtomicLong(0);
-
 	private void heartbeat() {
 		while (true) {
-			exeHeartBeat();
-			// 通过随机的方式来避免数据库的洪峰压力
-			Util.sleep(RandomUtils.nextInt(1, soaConfig.getHeartbeatSleepTime()));
-		}
-
-	}
-
-	private void exeHeartBeat() {
-		if (mapAppPolling.size() > 0) {
-			log.info("doHeartBeat_start");
-			Transaction catTransaction = null;
-			heartBeatCounter.compareAndSet(Long.MAX_VALUE, 0);
-			long counter = heartBeatCounter.incrementAndGet();
-			try {
-				catTransaction = Tracer.newTransaction("Service",
-						"heartbeatBatch-" + soaConfig.getHeartbeatBatchSize());
-				Map<Long, Boolean> map = new HashMap<>(mapAppPolling);
-				List<List<Long>> idss = Util.split(new ArrayList<>(map.keySet()), soaConfig.getHeartbeatBatchSize());
-				for (List<Long> ids : idss) {
-					if (counter == heartBeatCounter.get()) {
+			if (mapAppPolling.size() > 0) {
+				log.info("doHeartBeat_start");
+				Transaction catTransaction = null;
+				try {					
+					Map<Long, Boolean> map = new HashMap<>(mapAppPolling);
+					catTransaction = Tracer.newTransaction("Service",
+							"heartbeatBatch-" + (map.size()-map.size()%10));
+					List<List<Long>> idss = Util.split(new ArrayList<>(map.keySet()),
+							soaConfig.getHeartbeatBatchSize());
+					CountDownLatch countDownLatch = new CountDownLatch(idss.size());
+					for (List<Long> ids : idss) {
 						executorRun.execute(() -> {
 							doHeartbeat(ids);
+							countDownLatch.countDown();
 						});
 						for (Long id : ids) {
 							mapAppPolling.remove(id);
 						}
 					}
+					countDownLatch.await();
+					catTransaction.setStatus(Transaction.SUCCESS);
+				} catch (Exception e) {
+					catTransaction.setStatus(e);
+				} finally {
+					catTransaction.complete();
 				}
-				catTransaction.setStatus(Transaction.SUCCESS);
-			} catch (Exception e) {
-				catTransaction.setStatus(e);
-			} finally {
-				catTransaction.complete();
+				log.info("doHeartBeat_end");
 			}
-			log.info("doHeartBeat_end");
+			// 通过随机的方式来避免数据库的洪峰压力
+			Util.sleep(soaConfig.getHeartbeatSleepTime());
 		}
+
 	}
 
 	private void doHeartbeat(List<Long> ids) {
@@ -140,7 +136,6 @@ public class ClientAppHeartbeatController {
 			catTransaction.setStatus(e);
 		}
 		catTransaction.complete();
-
 	}
 
 	private void logMethod(long id, String action) {
@@ -156,6 +151,22 @@ public class ClientAppHeartbeatController {
 		if (soaConfig.isFullLog()) {
 			logMethod(request.getInstanceId(), " heart_begin");
 		}
+		if (soaConfig.getHeartBeatAsyn()) {
+			asynHeartBeat(request);
+		} else {
+			synHeartBeat(request);
+		}
+		if (soaConfig.isFullLog()) {
+			logMethod(request.getInstanceId(), " heart_end_" + response.getHeartbeatTime());
+		}
+		return response;
+	}
+
+	private void synHeartBeat(HeartBeatRequest request) {
+		doHeartbeat(Arrays.asList(request.getInstanceId()));
+	}
+
+	private void asynHeartBeat(HeartBeatRequest request) {
 		try {
 			if (request != null) {
 				if (request.getInstanceId() > 0) {
@@ -171,10 +182,6 @@ public class ClientAppHeartbeatController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if (soaConfig.isFullLog()) {
-			logMethod(request.getInstanceId(), " heart_end_" + response.getHeartbeatTime());
-		}
-		return response;
 	}
 
 }

@@ -39,7 +39,7 @@ public class StatController {
 			StackTraceElement[] stackTraceElements = t1.getValue();
 			state.putIfAbsent(thread.getState(), 0);
 			state.put(thread.getState(), state.get(thread.getState())+1);
-			rs.append("\n<br/>线程名称：" + thread.getName() + ",线程id:"+thread.getId()+",16进制为："+Long.toHexString(thread.getId())+"，线程状态："+thread.getState()+"<br/>\n");
+			rs.append("\n<br/>线程名称：" + thread.getName() + ",线程id:"+thread.getId()+",16进制为："+Long.toHexString(thread.getId())+",线程优先级为："+thread.getPriority()+"，线程状态："+thread.getState()+"<br/>\n");
 			for (StackTraceElement st : stackTraceElements) {
 				rs.append(st.toString()+ "<br/>\n");
 			}

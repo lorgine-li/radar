@@ -204,5 +204,9 @@ public class UiInstanceService{
         }
     }
 
+    public List<String>getAllSdkVersion(){
+        return uiInstanceRepository.getAllSdkVersion();
+    }
+
 
 }

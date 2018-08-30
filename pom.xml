@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.ppdai.infrastructure</groupId>
 	<artifactId>radar</artifactId>
-	<version>0.0.8-SNAPSHOT</version>
+	<version>0.0.9-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>radar</name>
 	<modules>
@@ -70,7 +70,7 @@
 				<scope>test</scope>
 			</dependency>		
 		</dependencies>
-	</dependencyManagement>	
+	</dependencyManagement>
 	<build>
 		<pluginManagement>
 			<plugins>

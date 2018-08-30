@@ -21,6 +21,20 @@
             </div>
         </div>
 
+        <div class="layui-inline hide" id="heart">
+            <label class="layui-form-label">心跳：</label>
+            <div class="layui-inline" style="width:120px;">
+                <select name="heartSelect" lay-filter="heartSelect">
+                    <option value="0">全部</option>
+                    <option value="1">正常</option>
+                    <option value="2">过期</option>
+                    <option value="10">过期十分钟</option>
+                    <option value="30">过期三十分钟</option>
+                    <option value="60">过期一小时</option>
+                </select>
+            </div>
+        </div>
+
         <div class="layui-inline">
             <label class="layui-form-label">ID：</label>
             <div class="layui-input-inline"  style="width:120px;">
@@ -37,22 +51,29 @@
 
         <div class="layui-inline">
             <label class="layui-form-label">应用ID：</label>
-            <div class="layui-input-inline" >
+            <div class="layui-input-inline"  style="width:120px;">
                 <input type="text" value="" id="appId" class="layui-input search_input"/>
             </div>
         </div>
 
         <div class="layui-inline">
             <label class="layui-form-label">应用名：</label>
-            <div class="layui-input-inline" >
+            <div class="layui-input-inline" style="width:120px;">
                 <input type="text" value="" id="appName" class="layui-input search_input"/>
             </div>
         </div>
 
         <div class="layui-inline">
             <label class="layui-form-label">IP：</label>
-            <div class="layui-input-inline">
+            <div class="layui-input-inline" style="width:120px;">
                 <input type="text" value="" id="ip" class="layui-input search_input"/>
+            </div>
+        </div>
+
+        <div class="layui-inline">
+            <label class="layui-form-label">版本号：</label>
+            <div class="layui-input-inline" style="width:120px;">
+                <input type="text" value="" id="sdkVersion" class="layui-input search_input"/>
             </div>
         </div>
 
@@ -63,7 +84,7 @@
     </div>
 </form>
 <table class="layui-table"
-       lay-data="{height:'full', url:'/app/instance/list/data', page:true,limit: 10, id:'instanceTableId'}"
+       lay-data="{height:'full', page:true,limit: 10, id:'instanceTableId'}"
        lay-filter="instanceTableId">
     <thead>
     <tr>
@@ -83,29 +104,35 @@
             rowspan="2">集群名
         </th>
         <th lay-data="{align: 'center'}" colspan="2">状态</th>
-        <th lay-data="{field: 'supperStatus', align: 'center', templet: '#supperStatusTpl', width:'9%'}"
+        <th lay-data="{field: 'supperStatus', align: 'center', templet: '#supperStatusTpl', width:'8%'}"
             rowspan="2">一键启停
         </th>
         <th lay-data="{field: 'finalStatus', align: 'center', templet: '#finalStatusTpl',width:'6%'}" rowspan="2">最终状态
         </th>
-        <th lay-data="{field: 'ip', align: 'center', templet: '#iPTpl',width:'8%'}" rowspan="2">IP</th>
+        <th lay-data="{field: 'ip', align: 'center', templet: '#iPTpl',width:'7%'}" rowspan="2">IP</th>
         <th lay-data="{field: 'port', align: 'center', width:'4%'}" rowspan="2">Port</th>
-        <th lay-data="{field: 'heartTime', align: 'center',width:'12%'}"
+        <th lay-data="{field: 'heartTime', align: 'center',width:'11%'}"
             rowspan="2">心跳时间
+        </th>
+        <th lay-data="{field: 'sdkVersion', align: 'center',width:'5%'}"
+            rowspan="2">版本号
         </th>
         <th lay-data="{field: 'ownerName', align: 'center',width:'4%'}"
             rowspan="2">负责人
         </th>
+        <th lay-data="{field: 'left',align: 'center', toolbar: '#confirm',width:'4%'}" rowspan="2">心跳</th>
     </tr>
     <tr>
-        <th lay-data="{field: 'heartStatus', align: 'center', templet: '#heartStatusTpl',width:'9%'}">心跳
+        <th lay-data="{field: 'heartStatus', align: 'center', templet: '#heartStatusTpl',width:'6%'}">心跳
         </th>
-        <th lay-data="{field: 'pubStatus', align: 'center', templet: '#publishStatusTpl',event:'setPublish',width:'9%'}">
+        <th lay-data="{field: 'pubStatus', align: 'center', templet: '#publishStatusTpl',event:'setPublish',width:'6%'}">
             拉入/拉出
         </th>
     </tr>
     </thead>
 </table>
+
+<input type="hidden" id="tag" th:value="${tag}"/>
 
 <script th:src="@{/layui/layui.js}"></script>
 
@@ -125,6 +152,14 @@
     {{#  } else { }}
     <i class="layui-icon icon-no">&#x1006;</i>
     {{#  } }}
+</script>
+
+<script type="text/html" id="confirm">
+    <div class="layui-inline">
+        <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="confirm">
+            检查
+        </a>
+    </div>
 </script>
 
 <script type="text/html" id="publishStatusTpl">
@@ -218,7 +253,7 @@
     }
     .layui-form-label{
        width:auto!important;
-       padding:9px 5px!important;
+       padding:9px 1px!important;
     }
 
 </style>

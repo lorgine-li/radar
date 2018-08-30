@@ -1,6 +1,7 @@
 package com.ppdai.infrastructure.radar.biz.polling;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,10 @@ import org.springframework.util.StringUtils;
 
 import com.ppdai.infrastructure.radar.biz.common.SoaConfig;
 import com.ppdai.infrastructure.radar.biz.common.thread.SoaThreadFactory;
+import com.ppdai.infrastructure.radar.biz.common.trace.Tracer;
+import com.ppdai.infrastructure.radar.biz.common.trace.spi.Transaction;
 import com.ppdai.infrastructure.radar.biz.common.util.EmailUtil;
+import com.ppdai.infrastructure.radar.biz.common.util.HttpClient;
 import com.ppdai.infrastructure.radar.biz.common.util.JsonUtil;
 import com.ppdai.infrastructure.radar.biz.common.util.Util;
 import com.ppdai.infrastructure.radar.biz.entity.AppEntity;
@@ -54,6 +58,7 @@ public class InstanceTimeOutCleaner {
 
 	private Date lastDate = new Date();
 	private static Object lockObj = new Object();
+	private HttpClient client = new HttpClient(3, 3);
 
 	public void start() {
 		if (!isRunning) {
@@ -62,7 +67,7 @@ public class InstanceTimeOutCleaner {
 				executor.execute(new Runnable() {
 					@Override
 					public void run() {
-						doCheckHearttime();
+						doCheckHeartTime();
 					}
 				});
 				executor.execute(new Runnable() {
@@ -111,16 +116,39 @@ public class InstanceTimeOutCleaner {
 
 	}
 
-	protected void doCheckHearttime() {
+	protected void doCheckHeartTime() {
 		while (isRunning) {
 			try {
 				// clearOldTaskData();
 				if (soaLockService.isMaster()) {
 					isMaster = true;
-					// 检查心跳过期的，但是心跳状态不匹配的
-					checkExpiredHeartTime();
-					// 检查正常的，但是心跳状态不匹配的
-					checkNormalHeartTime();
+					Transaction transaction = Tracer.newTransaction("heartbeat", "check");
+					try {
+						Transaction transaction1 = Tracer.newTransaction("heartbeat", "checkExpiredHeartTime");
+						try {
+							// 检查心跳过期的，但是心跳状态不匹配的
+							checkExpiredHeartTime();
+							transaction1.setStatus(Transaction.SUCCESS);
+						} catch (Exception e) {
+							transaction1.setStatus(e);
+						}
+						transaction1.complete();
+
+						Transaction transaction2 = Tracer.newTransaction("heartbeat", "checkNormalHeartTime");
+						try {
+							// 检查正常的，但是心跳状态不匹配的
+							checkNormalHeartTime();
+							transaction2.setStatus(Transaction.SUCCESS);
+						} catch (Exception e) {
+							transaction2.setStatus(e);
+						}
+						transaction2.complete();
+						transaction.setStatus(Transaction.SUCCESS);
+					} catch (Exception e) {
+						transaction.setStatus(e);
+					}
+					transaction.complete();
+
 				} else {
 					isMaster = false;
 				}
@@ -154,38 +182,32 @@ public class InstanceTimeOutCleaner {
 	}
 
 	private void clearOldInstanceData() {
-		List<InstanceEntity> expireLst = instanceService.findOld(soaConfig.getInstanceClearTime());
-		if (expireLst.size() == 0) {
+		List<InstanceEntity> expireLst1 = instanceService.findOld(soaConfig.getInstanceClearTime());
+		if (expireLst1.size() == 0) {
 			return;
 		}
+		List<InstanceEntity> expireLst = new ArrayList<>();
 		String dbNow = Util.formateDate(util.getDbNow());
-		expireLst.forEach(t1 -> {
-			String content = String.format("心跳时间超过过期时间，被删除,json为:%s,and DbTime is %s", JsonUtil.toJsonNull(t1), dbNow);
-			Util.log(log, t1, "timeout_delete_old", content);
-			emailUtil.sendWarnMail(
-					"clearOldInstance,appId:" + t1.getCandAppId() + ",ip:" + t1.getIp() + "长时间为发送心跳，即将删除", content,
-					getMail(t1.getCandAppId()));
+		expireLst1.forEach(t1 -> {
+			if (!doubleCheck(t1, dbNow, 1)) {
+				String content = String.format("心跳时间超过过期时间，被删除,json为:%s,and DbTime is %s", JsonUtil.toJsonNull(t1),
+						dbNow);
+				Util.log(log, t1, "timeout_delete_old", content);
+				emailUtil.sendWarnMail(
+						"clearOldInstance,appId:" + t1.getCandAppId() + ",ip:" + t1.getIp() + "长时间为发送心跳，即将删除", content,
+						getMail(t1.getCandAppId()));
+				expireLst.add(t1);
+			}
 		});
-		if (expireLst.size() < 20) {
-			instanceService.deleteInstance(expireLst);
-		} else {
-			List<InstanceEntity> instanceEntities = new ArrayList<>(20);
-			for (int i = 0; i < expireLst.size(); i++) {
-				instanceEntities.add(expireLst.get(i));
-				if ((i + 1) % 20 == 0) {
-					try {
-						instanceService.deleteInstance(instanceEntities);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					instanceEntities.clear();
-				}
-			}
-			if (instanceEntities.size() > 0) {
-				instanceService.deleteInstance(instanceEntities);
-			}
-		}
 
+		List<List<InstanceEntity>> rs = Util.split(expireLst, 20);
+		rs.forEach(t1 -> {
+			try {
+				instanceService.deleteInstance(t1);
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+		});
 	}
 
 	protected void checkNormalHeartTime() {
@@ -193,14 +215,13 @@ public class InstanceTimeOutCleaner {
 		if (!CollectionUtils.isEmpty(normalEntity)) {
 			String dbNow = Util.formateDate(util.getDbNow());
 			normalEntity.forEach(t1 -> {
-				String content = String.format("心跳正常，心跳状态变更为1,json为:%s,and DbTime is %s", JsonUtil.toJsonNull(t1), dbNow);
-				
-				Util.log(log, t1, "heartBeatNormal",content);
-				if (t1.getInstanceStatus() == 0) {
-					emailUtil.sendWarnMail(
+				String content = String.format("心跳正常，心跳状态变更为1,json为:%s,and DbTime is %s", JsonUtil.toJsonNull(t1),
+						dbNow);
+				Util.log(log, t1, "heartBeatNormal", content);				
+				emailUtil.sendWarnMail(
 							"checkHeartTime,appId:" + t1.getCandAppId() + ",ip:" + t1.getIp() + "心跳正常，服务可用", content,
 							getMail(t1.getCandAppId()));
-				}
+				
 			});
 			if (soaLockService.isMaster()) {
 				log.info("NormalHeartTime开始更新");
@@ -227,26 +248,60 @@ public class InstanceTimeOutCleaner {
 
 	protected void checkExpiredHeartTime() {
 		List<InstanceEntity> expireEntity = instanceService.findExpired(soaConfig.getExpiredTime());
+		List<InstanceEntity> expireDCheckEntity = new ArrayList<>(expireEntity.size());
 		if (!CollectionUtils.isEmpty(expireEntity)) {
 			String dbNow = Util.formateDate(util.getDbNow());
 			expireEntity.forEach(t1 -> {
-				String content = String.format("超时，心跳状态变更为0,json为:%s,and DbTime is %s", JsonUtil.toJsonNull(t1), dbNow);
-				Util.log(log, t1, "heartBeatTimeOut", content);
-				if (t1.getInstanceStatus() == 1) {
+				if (!doubleCheck(t1, dbNow, 0)) {
+					String content = String.format("超时，心跳状态变更为0,json为:%s,and DbTime is %s", JsonUtil.toJsonNull(t1),
+							dbNow);
+					Util.log(log, t1, "heartBeatTimeOut", content);					
 					emailUtil.sendWarnMail(
-							"checkHeartTime,appId:" + t1.getCandAppId() + ",ip:" + t1.getIp() + "心跳超时，服务可能不可用", content,
-							getMail(t1.getCandAppId()));
+								"checkHeartTime,appId:" + t1.getCandAppId() + ",ip:" + t1.getIp() + "心跳超时，服务可能不可用",
+								content, getMail(t1.getCandAppId()));					
+					expireDCheckEntity.add(t1);
 				}
 			});
 			if (soaLockService.isMaster()) {
-				List<List<InstanceEntity>> rs = Util.split(expireEntity, 50);
-				log.info("HeartTime开始更新");
+				List<List<InstanceEntity>> rs = Util.split(expireDCheckEntity, 50);
+				// log.info("HeartTime开始更新");
 				rs.forEach(t1 -> {
 					instanceService.updateHeartStatus(t1, false, soaConfig.getExpiredTime());
 				});
 
 			}
 		}
+	}
+
+	private boolean doubleCheck(InstanceEntity t1, String dbNow, int type) {
+		if (soaConfig.getDoubleCheck()) {
+			if (StringUtils.isEmpty((t1.getIp()+"").trim())) {
+				return false;
+			}
+			String url = String.format("http://%s:%s/radar/client/instance", t1.getIp().trim(), t1.getPort());
+			boolean flag = client.check(url);
+			if (flag) {
+				Util.log(log, t1, "doubleCheck", "服务可用");
+				try {
+					instanceService.heartBeat(Arrays.asList(t1.getId()));
+					log.info(soaConfig.getLogPrefix() + " is update heartbeat double_check", t1.getId());
+				} catch (Exception e) {
+
+				}
+				if (type == 0) {
+					emailUtil.sendInfoMail(
+							"doublecheck,appId:" + t1.getCandAppId() + ",ip:" + t1.getIp() + "心跳超时，但是服务可用，请注意",
+							"心跳超时，但是服务可用，请注意。json is " + JsonUtil.toJson(t1) + ",dbTime is " + dbNow);
+				} else {
+					emailUtil.sendInfoMail(
+							"clearOldInstance,appId:" + t1.getCandAppId() + ",ip:" + t1.getIp() + "心跳超时，但是服务可用，不删除，请注意",
+							"超过" + (soaConfig.getInstanceClearTime() / 60 / 60.0) + "小时无心跳，但是服务可用，不删除，请注意。 json is"
+									+ JsonUtil.toJson(t1) + ",dbTime is " + dbNow);
+				}
+			}
+			return flag;
+		}
+		return false;
 	}
 
 	public void stop() {

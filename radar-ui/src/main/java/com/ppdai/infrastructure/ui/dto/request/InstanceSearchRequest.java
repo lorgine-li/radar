@@ -17,6 +17,26 @@ public class InstanceSearchRequest extends BaseUiRequst{
 
     private String departmentName;
 
+    private String sdkVersion;
+
+    private String heartStatus;
+
+    public String getHeartStatus() {
+        return heartStatus;
+    }
+
+    public void setHeartStatus(String heartStatus) {
+        this.heartStatus = heartStatus;
+    }
+
+    public String getSdkVersion() {
+        return sdkVersion;
+    }
+
+    public void setSdkVersion(String sdkVersion) {
+        this.sdkVersion = sdkVersion;
+    }
+
     public String getStatusSelect() {
         return statusSelect;
     }
