@@ -33,10 +33,10 @@ public class HttpClient {
 		this(32, 32);
 	}
 
-	public boolean check(String url) {
-		Request request = new Request.Builder().url(url).get().build();
+	public boolean check(String url) {		
 		Transaction transaction = Tracer.newTransaction("heartbeat", url);
 		try {
+			Request request = new Request.Builder().url(url).get().build();
 			Response response = client.newCall(request).execute();
 			return response.isSuccessful();
 		} catch (Exception e) {
@@ -52,13 +52,13 @@ public class HttpClient {
 		String json = "";
 		if (reqObj != null) {
 			json = JsonUtil.toJsonNull(reqObj);
-		}
-		RequestBody body = RequestBody.create(JSONTYPE, json);
-		Request request = new Request.Builder().url(url).post(body).build();
+		}		
 		Response response = null;
 		Transaction transaction = null;
 		transaction = Tracer.newTransaction("mq-client", url);
 		try {
+			RequestBody body = RequestBody.create(JSONTYPE, json);
+			Request request = new Request.Builder().url(url).post(body).build();
 			response = client.newCall(request).execute();
 			if (transaction != null) {
 				transaction.setStatus(Transaction.SUCCESS);
