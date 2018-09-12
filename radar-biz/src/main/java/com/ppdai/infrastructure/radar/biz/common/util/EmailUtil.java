@@ -37,6 +37,7 @@ public class EmailUtil {
 
 	@PostConstruct
 	private void init() {
+		System.setProperty("mail.mime.charset","UTF-8"); 
 		executor.submit(new Runnable() {
 			@Override
 			public void run() {
@@ -44,7 +45,7 @@ public class EmailUtil {
 				while (true) {
 					try {
 						emailVo = emailVos.take();
-					} catch (InterruptedException e) {
+					} catch (Exception e) {
 
 					}
 					if (emailVo != null) {
