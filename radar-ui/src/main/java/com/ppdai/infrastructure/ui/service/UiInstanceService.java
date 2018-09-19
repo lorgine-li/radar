@@ -6,6 +6,7 @@ import com.ppdai.infrastructure.radar.biz.dto.pub.AdjustSupperStatusRequest;
 import com.ppdai.infrastructure.radar.biz.dto.ui.CombinedInstanceDto;
 import com.ppdai.infrastructure.radar.biz.dto.ui.UiResponse;
 import com.ppdai.infrastructure.radar.biz.entity.AppEntity;
+import com.ppdai.infrastructure.radar.biz.entity.InstanceEntity;
 import com.ppdai.infrastructure.radar.biz.service.AppService;
 import com.ppdai.infrastructure.radar.biz.service.InstanceService;
 import com.ppdai.infrastructure.radar.biz.service.RoleService;
@@ -90,6 +91,14 @@ public class UiInstanceService{
             setFinalStatus(combinedInstanceDto);
         }
         return UiResponseHelper.setUiResponse(uiResponse, count, instanceList);
+    }
+
+    public UiResponse deleteById(long instanceId){
+        UiResponse uiResponse=new UiResponse();
+        instanceService.deleteById(instanceId);
+        uiResponse.setCode(0+"");
+        uiResponse.setMsg("删除成功！");
+        return uiResponse;
     }
 
 

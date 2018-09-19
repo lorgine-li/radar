@@ -104,14 +104,14 @@
             rowspan="2">集群名
         </th>
         <th lay-data="{align: 'center'}" colspan="2">状态</th>
-        <th lay-data="{field: 'supperStatus', align: 'center', templet: '#supperStatusTpl', width:'8%'}"
+        <th lay-data="{field: 'supperStatus', align: 'center', templet: '#supperStatusTpl', width:'6%'}"
             rowspan="2">一键启停
         </th>
         <th lay-data="{field: 'finalStatus', align: 'center', templet: '#finalStatusTpl',width:'6%'}" rowspan="2">最终状态
         </th>
-        <th lay-data="{field: 'ip', align: 'center', templet: '#iPTpl',width:'7%'}" rowspan="2">IP</th>
+        <th lay-data="{field: 'ip', align: 'center', templet: '#iPTpl',width:'6%'}" rowspan="2">IP</th>
         <th lay-data="{field: 'port', align: 'center', width:'4%'}" rowspan="2">Port</th>
-        <th lay-data="{field: 'heartTime', align: 'center',width:'11%'}"
+        <th lay-data="{field: 'heartTime', align: 'center',width:'10%'}"
             rowspan="2">心跳时间
         </th>
         <th lay-data="{field: 'sdkVersion', align: 'center',width:'5%'}"
@@ -120,7 +120,7 @@
         <th lay-data="{field: 'ownerName', align: 'center',width:'4%'}"
             rowspan="2">负责人
         </th>
-        <th lay-data="{field: 'left',align: 'center', toolbar: '#confirm',width:'4%'}" rowspan="2">心跳</th>
+        <th lay-data="{field: 'left',align: 'center', toolbar: '#confirm',width:'6%'}" rowspan="2">心跳</th>
     </tr>
     <tr>
         <th lay-data="{field: 'heartStatus', align: 'center', templet: '#heartStatusTpl',width:'6%'}">心跳
@@ -155,12 +155,24 @@
 </script>
 
 <script type="text/html" id="confirm">
+    {{#  if((d.role==0||d.role==1)&&d.heartStatus==0&&d.finalStatus==0){ }}
+    <div class="layui-inline">
+        <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="confirm">
+            检查
+        </a>
+        <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="delete">
+            删除
+        </a>
+    </div>
+    {{#  } else { }}
     <div class="layui-inline">
         <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="confirm">
             检查
         </a>
     </div>
+    {{#  } }}
 </script>
+
 
 <script type="text/html" id="publishStatusTpl">
     {{#  if(d.role==0||d.role==1){ }}

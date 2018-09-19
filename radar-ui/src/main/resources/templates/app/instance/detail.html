@@ -29,16 +29,19 @@
             rowspan="2">instance_id
         </th>
         <th lay-data="{align: 'center'}" colspan="2">状态</th>
-        <th lay-data="{field: 'supperStatus', align: 'center', templet: '#supperStatusTpl', width:'8%'}"
+        <th lay-data="{field: 'supperStatus', align: 'center', templet: '#supperStatusTpl', width:'6%'}"
             rowspan="2">一键启停
         </th>
-        <th lay-data="{field: 'finalStatus', align: 'center', templet: '#finalStatusTpl',width:'7%'}" rowspan="2">最终状态</th>
+        <th lay-data="{field: 'finalStatus', align: 'center', templet: '#finalStatusTpl',width:'6%'}" rowspan="2">最终状态</th>
         <th lay-data="{field: 'ip', align: 'center',width:'7%'}" rowspan="2">IP</th>
         <th lay-data="{field: 'port', align: 'center',width:'4%'}"
             rowspan="2">端口
         </th>
-        <th lay-data="{field: 'heartTime', align: 'center',width:'9%'}"
+        <th lay-data="{field: 'heartTime', align: 'center',width:'8%'}"
             rowspan="2">心跳时间
+        </th>
+        <th lay-data="{field: 'insertTime', align: 'center',width:'8%'}"
+            rowspan="2">创建时间
         </th>
         <th lay-data="{field: 'lan', align: 'center',width:'4%'}"
             rowspan="2">语言
@@ -48,9 +51,9 @@
         </th>
     </tr>
     <tr>
-        <th lay-data="{field: 'heartStatus', align: 'center', templet: '#heartStatusTpl',width:'8%'}">心跳
+        <th lay-data="{field: 'heartStatus', align: 'center', templet: '#heartStatusTpl',width:'6%'}">心跳
         </th>
-        <th lay-data="{field: 'pubStatus', align: 'center', templet: '#publishStatusTpl',event:'setPublish',width:'8%'}">
+        <th lay-data="{field: 'pubStatus', align: 'center', templet: '#publishStatusTpl',event:'setPublish',width:'6%'}">
             拉入/拉出
         </th>
     </tr>

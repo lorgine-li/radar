@@ -127,6 +127,11 @@ public class InstanceController {
         }
     }
 
+    @RequestMapping("/delete")
+    @ResponseBody
+    public UiResponse deleteById(@RequestParam("instanceId") long instanceId){
+        return uiInstanceService.deleteById(instanceId);
+    }
 
 
     /**

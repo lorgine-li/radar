@@ -533,8 +533,34 @@ layui
                         });
                     }
 
+                    if(layEvent==='delete'){
+                        if(data.heartStatus==0&& data.finalStatus==0){
+                            layer.confirm("确定要删除该实例？", {icon: 3, title: '不可逆操作！'}, function (index) {
+                                $.post("/app/instance/delete",'instanceId='+data.id, requestCallback);
+                                layer.close(index);
+                            });
+
+                        }else{
+                            layer.msg('不符合删除条件', {icon: 2})
+                        }
+
+                    }
+
                     return false;
                 });
+
+            function requestCallback(result, xhr) {
+                if (xhr === 'success') {
+                    if (result.code === '0') {
+                        layer.msg(result.msg, {icon: 1});
+                        refreshList();
+                    } else {
+                        layer.msg(result.msg, {icon: 2})
+                    }
+                } else {
+                    layer.msg("网络异常！"+xhr, {icon: 2})
+                }
+            }
 
 
         });
