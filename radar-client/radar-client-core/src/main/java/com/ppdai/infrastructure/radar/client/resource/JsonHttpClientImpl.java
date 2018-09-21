@@ -41,12 +41,13 @@ public class JsonHttpClientImpl implements JsonHttpClient {
 		if (reqObj != null) {
 			json = JsonUtil.toJsonNull(reqObj);
 		}
-		RequestBody body = RequestBody.create(JSONTYPE, json);
-		Request request = new Request.Builder().url(url).post(body).build();
+		
 		Response response = null;
 		Transaction transaction = Tracer.newTransaction("radar-client", url);
 		long start = System.nanoTime();
 		try {
+			RequestBody body = RequestBody.create(JSONTYPE, json);
+			Request request = new Request.Builder().url(url).post(body).build();
 			response = client.newCall(request).execute();
 			// transaction.complete();
 			if (transaction != null) {

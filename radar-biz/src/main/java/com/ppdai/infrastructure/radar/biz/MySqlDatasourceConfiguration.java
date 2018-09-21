@@ -44,9 +44,6 @@ public class MySqlDatasourceConfiguration {
     @ConfigurationProperties(prefix = "spring.datasource")
     public DataSource mysqlDataSource() {
     	DruidDataSource druidDataSource= new DruidDataSource();
-//    	druidDataSource.setUrl("jdbc:mysql://192.168.211.87:3408/soa_new");
-//    	druidDataSource.setUsername("yanglei");
-//    	druidDataSource.setPassword("abc@123");
     	return druidDataSource;
     }
 

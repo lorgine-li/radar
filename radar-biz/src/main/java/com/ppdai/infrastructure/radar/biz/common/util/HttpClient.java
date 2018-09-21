@@ -35,9 +35,10 @@ public class HttpClient {
 
 	public boolean check(String url) {		
 		Transaction transaction = Tracer.newTransaction("heartbeat", url);
+		Response response = null;
 		try {
 			Request request = new Request.Builder().url(url).get().build();
-			Response response = client.newCall(request).execute();
+		    response = client.newCall(request).execute();
 			return response.isSuccessful();
 		} catch (Exception e) {
 			transaction.addData("error", e.getMessage());
@@ -45,6 +46,13 @@ public class HttpClient {
 		} finally {
 			transaction.setStatus(Transaction.SUCCESS);
 			transaction.complete();
+			try {
+				if (response != null) {
+					response.close();
+				}
+			} catch (Exception e) {
+
+			}
 		}
 	}
 
